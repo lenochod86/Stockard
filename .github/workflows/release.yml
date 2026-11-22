@@ -22,7 +22,7 @@ jobs:
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Určit tag vydání
         run: |
@@ -44,12 +44,12 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -86,7 +86,7 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk "Stockard-${TAG:-dev-$GITHUB_RUN_NUMBER}.apk"
           ls -lh Stockard-*.apk
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Stockard-android
           path: Stockard-*.apk
