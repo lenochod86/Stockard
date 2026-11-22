@@ -60,6 +60,8 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+Alternativa bez příkazové řádky: *Actions → Release → Run workflow*, zadat verzi (např. `1.0.0`) – tag `v1.0.0` si GitHub vytvoří sám na zvoleném commitu.
+
 GitHub Actions (`.github/workflows/release.yml`) sám postaví podepsaný APK a připojí ho k Release. Stáhneš ho v telefonu ze záložky *Releases* a nainstaluješ (povol instalaci z neznámých zdrojů). Žádný Expo účet není potřeba. `versionCode` se bere z čísla běhu, takže novější release jde nainstalovat přes starší.
 
 APK je podepsaný výchozím klíčem Expo šablony – stačí k testování a sdílení mimo obchod. Pro Google Play si vygeneruj vlastní keystore.
