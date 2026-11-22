@@ -1,0 +1,71 @@
+name: Release
+
+# Postaví Android APK a připojí ho k GitHub Release.
+#   git tag v1.0.0 && git push origin v1.0.0
+# Lze spustit i ručně (Actions → Release → Run workflow); pak vznikne jen artefakt.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: npm ci
+
+      - name: Verze (z tagu) a versionCode (z čísla běhu)
+        run: |
+          node -e '
+            const fs = require("fs");
+            const c = JSON.parse(fs.readFileSync("app.json", "utf8"));
+            c.expo.version = process.env.V.replace(/^v/, "").split("-")[0];
+            c.expo.android.versionCode = Number(process.env.N);
+            fs.writeFileSync("app.json", JSON.stringify(c, null, 2));
+          '
+        env:
+          V: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.0.0' }}
+          N: ${{ github.run_number }}
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Vygenerovat nativní projekt
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: '1'
+
+      - name: Sestavit APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Přejmenovat APK
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk "Stockard-${GITHUB_REF_NAME}.apk"
+          ls -lh Stockard-*.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Stockard-android
+          path: Stockard-*.apk
+
+      - name: Vytvořit GitHub Release
+        if: github.ref_type == 'tag'
+        run: gh release create "$GITHUB_REF_NAME" Stockard-*.apk --title "Stockard $GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

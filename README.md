@@ -52,3 +52,15 @@ src/
 - Typ kódu u značek v `brands.ts` je **orientační** (řetězce karty časem mění). Skutečný typ se vždy zjistí ze skenu a jde změnit ručně – seznam si klidně upravte.
 - Při načítání z fotky je nejlepší ostrý snímek, kde kód zabírá velkou část obrázku.
 - Zatím není záloha/export – při změně telefonu je nutné karty přidat znovu (je to daň za „jen lokálně“).
+
+## Release přes Git (Android APK)
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions (`.github/workflows/release.yml`) sám postaví podepsaný APK a připojí ho k Release. Stáhneš ho v telefonu ze záložky *Releases* a nainstaluješ (povol instalaci z neznámých zdrojů). Žádný Expo účet není potřeba. `versionCode` se bere z čísla běhu, takže novější release jde nainstalovat přes starší.
+
+APK je podepsaný výchozím klíčem Expo šablony – stačí k testování a sdílení mimo obchod. Pro Google Play si vygeneruj vlastní keystore.
+iOS: bez placeného Apple Developer účtu se instalovatelný build vytvořit nedá.
