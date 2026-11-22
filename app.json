@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Stockard",
+    "slug": "stockard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.stockard.cards",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.stockard.cards",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "allowBackup": false
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Kamera se používá pouze ke skenování čárových a QR kódů vašich věrnostních karet. Nic se nikam neodesílá."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Přístup k fotkám se používá pouze pro načtení kódu z uložené fotky karty. Nic se nikam neodesílá."
+        }
+      ],
+      "expo-sqlite"
+    ]
+  }
+}
