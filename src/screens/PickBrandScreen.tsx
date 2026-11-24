@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import BrandLogo from '../components/BrandLogo';
 import { Brand, BRANDS } from '../data/brands';
 import { useTheme } from '../lib/theme';
 
@@ -57,7 +58,9 @@ export default function PickBrandScreen({ navigation }: NativeStackScreenProps<R
             onPress={() => open(item.id)}
             style={({ pressed }) => [styles.row, { backgroundColor: t.card, opacity: pressed ? 0.8 : 1 }]}
           >
-            <View style={[styles.dot, { backgroundColor: item.color }]} />
+            <View style={[styles.dot, { backgroundColor: item.color }]}>
+              <BrandLogo name={item.name} color={item.color} brandId={item.id} size={22} />
+            </View>
             <Text style={[styles.name, { color: t.text, flex: 1 }]}>{item.name}</Text>
             <View style={[styles.chip, { backgroundColor: t.chip }]}>
               <Text style={[styles.chipText, { color: t.text }]}>{item.kind === 'qr' ? 'QR kód' : 'Čárový kód'}</Text>
@@ -81,7 +84,7 @@ const styles = StyleSheet.create({
   section: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', paddingHorizontal: 16, paddingVertical: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 6, padding: 12, borderRadius: 12 },
   custom: { borderWidth: 1.5, marginBottom: 8 },
-  dot: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  dot: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 16, fontWeight: '600' },
   sub: { fontSize: 13, marginTop: 2 },
   chip: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8 },

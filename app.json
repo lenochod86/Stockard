@@ -49,7 +49,13 @@
           "photosPermission": "Přístup k fotkám se používá pouze pro načtení kódu z uložené fotky karty. Nic se nikam neodesílá."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Poloha se používá jen k tomu, aby aplikace nabídla karty, které jste na daném místě už dříve použili. Ukládá se pouze v telefonu a nikam se neodesílá."
+        }
+      ]
     ]
   }
 }

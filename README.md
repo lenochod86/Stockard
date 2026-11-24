@@ -12,6 +12,9 @@ Správce věrnostních karet pro **Android i iOS** (Expo / React Native). Inspir
   3. **ruční zadání** čísla a výběr typu kódu.
 - Podporované typy: QR, Aztec, Data Matrix, PDF417, Code 128, Code 39, Code 93, EAN-13, EAN-8, UPC-A, UPC-E, ITF, Codabar.
 - Zobrazení karty na pokladně: kód na bílém podkladu, **jas na maximum**, displej nezhasíná, po odchodu se jas vrátí.
+- **Loga**: vestavěná vektorová loga u části značek (generují se skriptem `scripts/generate-logos.mjs` z balíčku simple-icons, CC0), u ostatních monogram, a ke každé kartě jde nahrát **vlastní logo z galerie**. Loga jsou ochranné známky svých vlastníků.
+- **Řazení**: naposledy použité, nejčastěji používané, název A–Z, nově přidané, nejblíž místu použití. Volba se pamatuje. Nahoře jsou sekce „V okolí“ a „Často používané“.
+- **Návrhy podle místa** (volitelné, vypnuté dokud nepovolíš): při otevření karty se uloží přibližná poloha; když se na místo vrátíš (do 250 m), karta se nabídne v „V okolí“. Čte se jen při otevřené aplikaci (žádná poloha na pozadí), vše zůstává v telefonu, u karty se drží 40 nejnovějších míst, historii jde v Nastavení smazat.
 - Vyhledávání, řazení podle poslední použité, úprava a mazání, poznámka, barva karty, světlý/tmavý režim.
 
 ## Spuštění

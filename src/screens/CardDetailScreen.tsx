@@ -1,21 +1,23 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Brightness from 'expo-brightness';
 import { useKeepAwake } from 'expo-keep-awake';
 import type { RootStackParamList } from '../App';
+import BrandLogo from '../components/BrandLogo';
 import CodeView from '../components/CodeView';
 import { onColor } from '../data/brands';
 import { FORMATS } from '../lib/codes';
-import { Card, deleteCard, getCard, touchCard } from '../lib/db';
+import { Card, deleteCard, getCard, recordUse } from '../lib/db';
+import { getPositionIfEnabled } from '../lib/location';
 import { useTheme } from '../lib/theme';
 
 export default function CardDetailScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'CardDetail'>) {
   useKeepAwake();
   const t = useTheme();
   const { width } = useWindowDimensions();
-  const { cardId } = route.params;
+  const { cardId, fresh } = route.params;
   const [card, setCard] = useState<Card | null>(null);
 
   useFocusEffect(
@@ -25,7 +27,6 @@ export default function CardDetailScreen({ route, navigation }: NativeStackScree
         if (!alive) return;
         if (!c) return navigation.goBack();
         setCard(c);
-        touchCard(cardId).catch(() => {});
       });
 
       // Zvýšit jas, aby šel kód na pokladně dobře přečíst; po odchodu vrátit.
@@ -43,6 +44,16 @@ export default function CardDetailScreen({ route, navigation }: NativeStackScree
       };
     }, [cardId, navigation]),
   );
+
+  // Použití (a místo, kde k němu došlo) zaznamenáme jednou při otevření karty –
+  // ne při návratu z úprav a ne hned po přidání karty (to není nákup).
+  useEffect(() => {
+    if (fresh) return;
+    (async () => {
+      const pos = await getPositionIfEnabled(false);
+      await recordUse(cardId, pos);
+    })().catch(() => {});
+  }, [cardId, fresh]);
 
   useLayoutEffect(() => {
     if (card) navigation.setOptions({ title: card.name });
@@ -71,8 +82,11 @@ export default function CardDetailScreen({ route, navigation }: NativeStackScree
   return (
     <ScrollView style={{ backgroundColor: t.bg }} contentContainerStyle={styles.content}>
       <View style={[styles.hero, { backgroundColor: card.color }]}>
-        <Text style={[styles.name, { color: fg }]}>{card.name}</Text>
-        <Text style={[styles.type, { color: fg }]}>{info.kind === 'qr' ? 'QR kód' : 'Čárový kód'} · {info.label}</Text>
+        <BrandLogo name={card.name} color={card.color} brandId={card.brandId} logo={card.logo} size={56} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.name, { color: fg }]}>{card.name}</Text>
+          <Text style={[styles.type, { color: fg }]}>{info.kind === 'qr' ? 'QR kód' : 'Čárový kód'} · {info.label}</Text>
+        </View>
       </View>
 
       <View style={{ alignItems: 'center', marginTop: 16 }}>
@@ -106,7 +120,7 @@ export default function CardDetailScreen({ route, navigation }: NativeStackScree
 
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 48 },
-  hero: { borderRadius: 18, padding: 20 },
+  hero: { borderRadius: 18, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16 },
   name: { fontSize: 24, fontWeight: '800' },
   type: { fontSize: 14, marginTop: 4, opacity: 0.9 },
   value: { marginTop: 14, fontSize: 18, letterSpacing: 1.5, fontVariant: ['tabular-nums'] },

@@ -8,12 +8,14 @@ import HomeScreen from './screens/HomeScreen';
 import PickBrandScreen from './screens/PickBrandScreen';
 import EditCardScreen from './screens/EditCardScreen';
 import CardDetailScreen from './screens/CardDetailScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   PickBrand: undefined;
   EditCard: { cardId?: number; brandId?: string | null };
-  CardDetail: { cardId: number };
+  CardDetail: { cardId: number; fresh?: boolean };
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,6 +37,7 @@ export default function App() {
           <Stack.Screen name="PickBrand" component={PickBrandScreen} options={{ title: 'Přidat kartu' }} />
           <Stack.Screen name="EditCard" component={EditCardScreen} options={{ title: 'Karta' }} />
           <Stack.Screen name="CardDetail" component={CardDetailScreen} options={{ title: '' }} />
+          <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Nastavení' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

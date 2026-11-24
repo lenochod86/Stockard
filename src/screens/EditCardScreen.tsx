@@ -13,8 +13,10 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import BrandLogo from '../components/BrandLogo';
 import CodeView from '../components/CodeView';
 import ScannerModal from '../components/ScannerModal';
 import { BRAND_BY_ID, CARD_COLORS } from '../data/brands';
@@ -35,6 +37,7 @@ export default function EditCardScreen({ route, navigation }: NativeStackScreenP
   const [value, setValue] = useState('');
   const [format, setFormat] = useState<CodeFormat>(brand?.kind === 'qr' ? 'qr' : 'code128');
   const [notes, setNotes] = useState('');
+  const [logo, setLogo] = useState<string | null>(null);
   const [storedBrandId, setStoredBrandId] = useState<string | null>(brandId ?? null);
   const [scanning, setScanning] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -54,6 +57,7 @@ export default function EditCardScreen({ route, navigation }: NativeStackScreenP
       setValue(c.value);
       setFormat(c.format);
       setNotes(c.notes);
+      setLogo(c.logo);
       setStoredBrandId(c.brandId);
       setLoaded(true);
     });
@@ -89,20 +93,40 @@ export default function EditCardScreen({ route, navigation }: NativeStackScreenP
     }
   };
 
+  const pickLogo = async () => {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+      if (res.canceled || !res.assets?.[0]) return;
+      // Zmenšíme na 256 px, ať databáze nenabobtná; PNG zachová průhlednost.
+      const img = await manipulateAsync(res.assets[0].uri, [{ resize: { width: 256 } }], {
+        format: SaveFormat.PNG,
+        base64: true,
+      });
+      if (img.base64) setLogo(`data:image/png;base64,${img.base64}`);
+    } catch (e) {
+      Alert.alert('Chyba', e instanceof Error ? e.message : 'Obrázek se nepodařilo načíst.');
+    }
+  };
+
   const save = async () => {
     const n = name.trim();
     const v = value.trim();
     if (!n) return Alert.alert('Chybí název', 'Zadejte název karty.');
     const err = validateCode(format, v);
     if (err) return Alert.alert('Neplatný kód', err);
-    const data = { name: n, value: v, format, color, notes: notes.trim(), brandId: storedBrandId };
+    const data = { name: n, value: v, format, color, notes: notes.trim(), brandId: storedBrandId, logo };
     if (cardId) {
       await updateCard(cardId, data);
       navigation.goBack();
     } else {
       const id = await addCard(data);
       navigation.popToTop();
-      navigation.navigate('CardDetail', { cardId: id });
+      navigation.navigate('CardDetail', { cardId: id, fresh: true });
     }
   };
 
@@ -137,6 +161,23 @@ export default function EditCardScreen({ route, navigation }: NativeStackScreenP
               style={[styles.swatch, { backgroundColor: c }, color.toLowerCase() === c.toLowerCase() && styles.swatchOn]}
             />
           ))}
+        </View>
+
+        <Text style={[styles.label, { color: t.sub }]}>Logo</Text>
+        <View style={styles.logoRow}>
+          <View style={[styles.logoBox, { backgroundColor: color }]}>
+            <BrandLogo name={name || '?'} color={color} brandId={storedBrandId} logo={logo} size={48} />
+          </View>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Pressable style={[styles.smallBtn, { backgroundColor: t.chip }]} onPress={pickLogo}>
+              <Text style={{ color: t.text, fontWeight: '600' }}>Vlastní logo z galerie</Text>
+            </Pressable>
+            {logo && (
+              <Pressable style={[styles.smallBtn, { backgroundColor: t.chip }]} onPress={() => setLogo(null)}>
+                <Text style={{ color: t.danger, fontWeight: '600' }}>Odebrat vlastní logo</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
 
         <Text style={[styles.label, { color: t.sub }]}>Kód karty</Text>
@@ -232,6 +273,9 @@ const styles = StyleSheet.create({
   swatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: 'transparent' },
   swatchOn: { borderColor: '#888', transform: [{ scale: 1.12 }] },
   row: { flexDirection: 'row', gap: 10 },
+  logoRow: { flexDirection: 'row', gap: 14, alignItems: 'center' },
+  logoBox: { width: 76, height: 76, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  smallBtn: { borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14, alignItems: 'center' },
   src: { flex: 1, borderRadius: 14, paddingVertical: 16, alignItems: 'center', gap: 4, justifyContent: 'center', minHeight: 84 },
   srcIcon: { fontSize: 26 },
   srcText: { fontWeight: '700', fontSize: 14, textAlign: 'center' },
